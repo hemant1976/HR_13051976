@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<link rel=”stylesheet” type=”text/css”
+	href=”https://cdn.datatables.net/1.10.18/css/jquery.dataTables.css” />
+<link href="css/style.css"
+        rel="stylesheet">	
+      
+<script type=”text/javascript”
+	src=”https://cdn.datatables.net/1.10.18/js/jquery.dataTables.js”></script>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+$( document ).ready(function() {
+	$('#addErrorMessage').hide();	
+	$('#viewErrorMessage').hide();	
+	$('#viewResultMessage').hide();
+});
+function addRecords() {	
+	$('#addResultMessage').hide();	
+		var bankName = document.getElementById("bankName").value;
+		var cardNumber = document.getElementById("cardNumber").value;
+		var expiryDate = document.getElementById("expiryDate").value;
+		if(bankName == '' || cardNumber == '' || expiryDate == '') {
+			return;
+		}
+		var formData = {
+			bankName : bankName,
+			cardNumber : cardNumber,
+			expiryDate : expiryDate,
+		};
+
+		var requestJSON = JSON.stringify(formData);
+		
+		
+
+		$.ajax({
+			type : "POST",
+			url : "http://localhost:8080/createRecord",
+			headers : {
+				"Content-Type" : "application/json"
+			},
+			data : requestJSON,
+			async : false, // enable or disable async (optional, but suggested as false if you need to populate data afterwards)
+			success : function(response, textStatus, jqXHR) {				
+				if (textStatus == 'success') {
+					$('#addResultMessage').show();					
+				}
+				
+			},
+			error : function(jqXHR, textStatus, errorThrown) {
+				$('#addErrorMessage').show();					
+			}
+		});
+	
+}
+
+function viewRecords() {	
+	$('#addResultMessage').hide();	
+	$('#dataTable tbody').empty();
+	
+	$.ajax({
+		type : "GET",
+		url : "http://localhost:8080/fetchRecords",
+		dataType: "json",
+		success : function(data) {	
+			if(data == '' || data == null) {
+				$('#viewResultMessage').show();
+			}
+			data.forEach(addRow);
+			function addRow(value, index, array) {	
+				index = index + 1;
+				var row = $('<tr><td>' + index + '</td><td>' + value.bankName+ '</td><td>' + value.cardNumber + '</td><td>' + value.expiryDate + '</td></tr>');
+				$('#dataTable').append(row);
+			}					 
+			
+		},
+		error : function(jqXHR, textStatus, errorThrown) {
+			$('#viewErrorMessage').show();
+		}
+	});
+	
+	}
+</script>	
+<title></title>
+</head>
+<body>	
+	<div id="addResultMessage" class="divMessage justify-content-center">
+		<h5><b>Record Added Successfully !</b></h5>
+	</div>
+	<div id="addErrorMessage" class="divMessage justify-content-center">
+			<h5><b>Error Occured While Adding Records !</b></h5>
+		</div>
+	<div>
+		<hr>
+	</div>
+	<div class="page-title justify-content-center">
+		<h1>MatchPs Demo Application</h1>
+	</div>
+	<div>
+		<hr>
+	</div>
+	<div class="container">
+		<form class='container' style='width: 100%'>
+			<div class="table-responsive">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Bank Name</th>
+							<th>Card Number</th>
+							<th>Expiry Date</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><input type="text" id="bankName" name="bankName"
+								required="true" placeholder="Enter Bank Name"
+								class="form-control"></td>
+							<td><input type="text" id="cardNumber" name="cardNumber"
+								required="true" placeholder="Enter Card Number"
+								class="form-control"></td>
+							<td><input type="text" id="expiryDate" name="expiryDate"
+								required="true" placeholder="Enter Expiry Date"
+								class="form-control"></td>
+							<td><button type="submit" id="addButton"
+									onclick="addRecords()" class="btn btn-primary">Add
+									Records</button></td>
+
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</form>
+		<div id="data-table" class="show-result">
+			<button type="submit" id="viewButton" onclick="viewRecords()"
+				class="btn btn-primary">View Records</button>
+		</div>
+		<div>
+			<hr>
+		</div>
+		<div class="table-responsive">
+			<table id="dataTable" class="table">
+				<thead>
+					<tr>
+						<th style="width: 10%;">SR NO</th>
+						<th style="width: 30%;">Bank Name</th>
+						<th style="width: 30%;">Card Number</th>
+						<th style="width: 30%;">Expiry Date</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+		<div id="viewResultMessage" class="divMessage justify-content-center">
+			<h5><b>No Records Found !</b></h5>
+		</div>
+		<div id="viewErrorMessage" class="divMessage justify-content-center">
+			<h5><b>Error Occured While Fetching Records !</b></h5>
+		</div>
+	</div>
+</body>
+</html>
